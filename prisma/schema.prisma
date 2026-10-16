@@ -1,0 +1,54 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EnquiryStatus {
+  NEW
+  IN_REVIEW
+  QUOTE_SENT
+  ACCEPTED
+  DECLINED
+  CLOSED
+}
+
+model Enquiry {
+  id           String         @id @default(cuid())
+  reference    String         @unique
+  service      String
+  propertyType String
+  description  String         @db.Text
+  urgency      String         @default("flexible")
+  name         String
+  email        String
+  phone        String?
+  postcode     String
+  address      String?
+  status       EnquiryStatus  @default(NEW)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  photos       EnquiryPhoto[]
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+model EnquiryPhoto {
+  id           String   @id @default(cuid())
+  enquiryId    String
+  url          String
+  storageKey   String?
+  originalName String?
+  mimeType     String?
+  sizeBytes    Int?
+  createdAt    DateTime @default(now())
+
+    enquiry Enquiry @relation(fields: [enquiryId], references: [id], onDelete: Cascade)
+
+  @@index([enquiryId])
+}
